@@ -1,5 +1,7 @@
 ## Interactive OpenAPI Documentation
 
+Interactive OpenAPI documentation for data tokenization, file encryption, FIDO authentication, and other cryptographic data and identity protection services. 
+
 {% for page in site.pages_list %}
   <a href="{{ page[1]  }}">{{ page[0] }}</a>
 {% endfor %}
