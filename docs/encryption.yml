@@ -1,0 +1,442 @@
+openapi: 3.0.0
+info:
+  title: File Encryption API
+  version: 4.0.0
+  description: |
+    The File Encryption API provides encryption capabilities for the secure storage and management of
+    sensitive files.
+
+    All API calls require a cryptographic domain ID ("did"). Cryptographic domains provide a method of cryptographically
+    separating encrypted data. Each domain uses a different set of encryption keys, uses a different set of credentials,
+    and can be configured separately to have different behaviors.
+
+    All web services require a set of valid credentials. These credentials provide administrators the ability to restrict
+    access to sensitive information. The default credentials for demo applications have the usernames "encrypt", "decrypt",
+    "encryptdecrypt", "pinguser", and "all". The usernames describe the web services these credentials are authorized to use.
+    They all have the password "Abcd1234!" for demo purposes.
+  termsOfService: 'https://www.strongkey.com/privacy-policy-terms-of-use/#terms-of-use'
+  contact:
+    name: StrongKey
+    url: 'https://www.strongkey.com'
+    email: support@strongkey.com
+  license:
+    name: GNU LGPL 2.1+
+    url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
+servers:
+  - url: '/skee/rest'
+tags:
+  - name: Standard Operations
+    description: File encryption/decryption.
+  - name: Cloud Operations
+    description: File encryption/decryption with encrypted file stored on cloud.
+paths:
+  /encrypt:
+    post:
+      summary: Encrypt file
+      description: Encrypt a file of any type and any size and escrow the key to a configured key manager.
+      tags:
+        - Standard Operations
+      operationId: encrypt
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - svcinfo
+                - fileinfo
+                - encinfo
+                - authzinfo
+                - filedata
+              properties:
+                svcinfo:
+                  $ref: '#/components/schemas/svcinfo'
+                fileinfo:
+                  $ref: '#/components/schemas/fileinfo'
+                encinfo:
+                  $ref: '#/components/schemas/encinfo'
+                authzinfo:
+                  $ref: '#/components/schemas/authzinfo'
+                filedata:
+                  $ref: '#/components/schemas/filedata'
+            encoding:
+              svcinfo:
+                contentType: application/json
+              fileinfo:
+                contentType: application/json
+              encinfo:
+                contentType: application/json
+              authzinfo:
+                contentType: application/json
+              filedata:
+                contentType: application/octet-stream
+        required: true
+      responses:
+        '200':
+          description: Successful encryption returns a 200 OK along with the encrypted file BLOB and sha256sum of the .ZENC file for integrity verification.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Any error on the encryption engine returns a 500 Exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3000:SKCEWS-ERR-3049: User does not belong to any groups: <sample groups>'
+        '401':
+          description: Unauthorized transactions return a 401 exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3055: Invalid user: <username>'
+  /decrypt:
+    post:
+      summary: Decrypt file
+      description: Decrypt a file encrypted by the encryption engine.
+      tags:
+        - Standard Operations
+      operationId: decrypt
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - svcinfo
+                - fileinfo
+                - authzinfo
+                - filedata
+              properties:
+                svcinfo:
+                  $ref: '#/components/schemas/svcinfo'
+                fileinfo:
+                  $ref: '#/components/schemas/fileinfo'
+                authzinfo:
+                  $ref: '#/components/schemas/authzinfo'
+                filedata:
+                  $ref: '#/components/schemas/filedata'
+            encoding:
+                svcinfo:
+                  contentType: application/json
+                fileinfo:
+                  contentType: application/json
+                encinfo:
+                  contentType: application/json
+                authzinfo:
+                  contentType: application/json
+        required: true
+      responses:
+        '200':
+          description: Successful decryption returns a 200 OK along with the decrypted file BLOB and sha256sum of the .ZENC file for integrity verification.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '500':
+          description: Any error on the encryption engine returns a 500 Exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3000:SKCEWS-ERR-3049: User does not belong to any groups:  <sample groups>'
+        '401':
+          description: Unauthorized transactions return a 401 exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3055: Invalid user: <username>'
+
+  /encrypttocloud:
+    post:
+      summary: Encrypt file and store to cloud.
+      description: Encrypt a file of any type and any size and escrow the key to a configured Key manager.
+      tags:
+        - Cloud Operations
+      operationId: encrypttocloud
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - svcinfo
+                - fileinfo
+                - encinfo
+                - authzinfo
+                - storageinfo
+                - filedata
+              properties:
+                svcinfo:
+                  $ref: '#/components/schemas/svcinfo'
+                fileinfo:
+                  $ref: '#/components/schemas/fileinfo'
+                encinfo:
+                  $ref: '#/components/schemas/encinfo'
+                authzinfo:
+                  $ref: '#/components/schemas/authzinfo'
+                storageinfo:
+                  $ref: '#/components/schemas/storageinfo'
+                filedata:
+                  $ref: '#/components/schemas/filedata'
+            encoding:
+              svcinfo:
+                contentType: application/json
+              fileinfo:
+                contentType: application/json
+              encinfo:
+                contentType: application/json
+              authzinfo:
+                contentType: application/json
+              storageinfo:
+                contentType: application/json
+              filedata:
+                contentType: application/octet-stream
+        required: true
+      responses:
+        '200':
+          description: Successful encryption returns a 200 OK along with the location of the encrypted file.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Any error on the encryption engine returns a 500 Exception with an error message.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3000:SKCEWS-ERR-3049: User does not belong to any groups: <sample groups>'
+        '401':
+          description: Unauthorized transactions return a 401 exception with an error message.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3055: Invalid user: <username>'
+
+  /decryptfromcloud:
+    post:
+      summary: Decrypt file stored in cloud.
+      description: Download a file from cloud storage and decrypt it.
+      tags:
+        - Cloud Operations
+      operationId: decryptfromcloud
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - svcinfo
+                - fileinfo
+                - authzinfo
+                - storageinfo
+              properties:
+                svcinfo:
+                  $ref: '#/components/schemas/svcinfo'
+                fileinfo:
+                  $ref: '#/components/schemas/fileinfo'
+                authzinfo:
+                  $ref: '#/components/schemas/authzinfo'
+                storageinfo:
+                  $ref: '#/components/schemas/storageinfo'
+            encoding:
+                svcinfo:
+                  contentType: application/json
+                fileinfo:
+                  contentType: application/json
+                encinfo:
+                  contentType: application/json
+                authzinfo:
+                  contentType: application/json
+        required: true
+      responses:
+        '200':
+          description: Successful decryption returns a 200 OK along with the decrypted file BLOB and sha256sum of the .ZENC file for integrity verification.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '500':
+          description: Any error on the encryption engine returns a 500 Exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3000:SKCEWS-ERR-3049: User does not belong to any groups:  <sample groups>'
+        '401':
+          description: Unauthorized transactions return a 401 exception with an error message.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+              example: 'SKCEWS-ERR-3055: Invalid user: <username>'
+
+components:
+  schemas:
+    svcinfo:
+      description: The service credentials for the web service.
+      type: object
+      required:
+        - did
+        - svcusername
+        - svcpassword
+      properties:
+        did:
+          description: The cryptographic domain ID.
+          type: string
+          maxLength: 5
+        svcusername:
+          description: The service credential username.
+          type: string
+        svcpassword:
+          description: The service credential password.
+          type: string
+          format: password
+      example: |
+        {
+          "did": "1",
+          "svcusername": "service-cc-ce",
+          "svcpassword": "Abcd1234!"
+        }
+    fileinfo:
+      description: Information related to the file being uploaded.
+      type: object
+      required:
+        - filename
+        - filedigest
+        - filedigestalg
+      properties:
+        filename:
+          description: The name of the file being uploaded.
+          type: string
+        filedigest:
+          description: Not being used currently.
+          type: string
+          nullable: true
+        filedigestalg:
+          description: Not being used currently.
+          type: string
+          nullable: true
+      example: |
+        {
+          "filename" : "test"
+        }
+
+    encinfo:
+      description: The properties to use for file encryption.
+      type: object
+      required:
+        - algorithm
+        - keysize
+        - uniquekey
+      properties:
+        algorithm:
+          description: The encryption algorithm in which to encrypt the file.
+          type: string
+          enum:
+            - AES
+            - DESEDE
+        keysize:
+          description: The size of the key to be used for encryption.
+          type: string
+          enum:
+            - 112
+            - 168
+            - 128
+            - 192
+            - 256
+        uniquekey:
+          description: Generate a unique encryption key for encrypt operation?
+          type: boolean
+      example: |
+        {
+          "algorithm" : "AES",
+          "keysize" : 256,
+          "uniquekey" : true
+        }
+
+    authzinfo:
+      description: The user providing authorization.
+      type: object
+      required:
+        - username
+        - userdn
+        - authgroups
+        - requiredauthorization
+      properties:
+        username:
+          description: LDAP user to determine authorization for operation.
+          type: string
+        userdn:
+          description: The full LDAP DN of the user (optional).
+          type: string
+          nullable: true
+        authgroups:
+          description: List of LDAP groups to determine authorization for decryption (hyphen (-) separated list).
+          type: string
+        requiredauthorization:
+          description: Integer number ranging from 0 to 3; to indicate the level of authorization needed to be able to decrypt the file.
+          type: integer
+          minimum: 0
+          maximum: 3
+      example: |
+        {
+          "username" : "encryptdecrypt",
+          "userdn" : "cn=encryptdecrypt,did=2,ou=users,ou=v2,ou=SKCE,ou=StrongAuth,ou=Applications,dc=strongauth,dc=com",
+          "authgroups" : "cn=EncryptionAuthorized,did=2,ou=groups,ou=v2,ou=SKCE,ou=StrongAuth,ou=Applications,dc=strongauth,dc=com",
+          "requiredauthorization" : 0
+        }
+
+    storageinfo:
+      description: Provides cloud related information for encryption engine to connect and store the encrypted file in a cloud storage container. This will either contain cloudname, accesskey, secretkey, or cloudcredentialid which the above three tokenized by the KeyAppliance.
+      type: object
+      required:
+        - cloudtype
+        - cloudname
+      properties:
+        storetype:
+          description: Location to store the ecrypted file (Local | Cloud).
+          type: string
+          nullable: true
+        cloudtype:
+          description: The type of cloud to be used for storage (AWS | AZURE | EUCA).
+          type: string
+        cloudname:
+          description: Cloud identifer as provided by the Cloud service provider.
+          type: string
+        accesskey:
+          description: The accesskey (username) to access the cloud storage service as provided by the service provider.
+          type: string
+          nullable: true
+        secretkey:
+          description: The secretkey (password) to access the cloud storage service as provided by the service provider.
+          type: string
+          nullable: true
+        cloudcontainer:
+          description: The location of the storage container (buckets) where the encrypted file will be stored.
+          type: string
+          nullable: true
+        cloudcredentialid:
+          description: If the cloud information is tokenized using the KeyAppliance, then this value represents the token returned by the KA.
+          type: string
+          nullable: true
+      example: |
+        {
+          "cloudtype" : "aws",
+          "cloudname" : "myawsstoragecloud",
+          "accesskey" : "AAAAA",
+          "secretkey" : "XXXXXX",
+          "cloudcontainer" : "testbucket"
+        }
+
+    filedata:
+      description: The file to upload.
+      type: string
+      format: binary
