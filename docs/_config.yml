@@ -2,6 +2,6 @@ theme: jekyll-theme-cayman
 title: OpenAPI Documentation
 description: Interactive API documentation for data tokenziation, file encryption, FIDO authentication, and other cryptographic data and identity protection services.
 pages_list:       
-  Data Tokenization: '/tokenization'
-  File Encryption: '/encryption'
-  FIDO Authentication: '/fido-authentication'
+  Data Tokenization: '/OpenAPI/tokenization'
+  File Encryption: '/OpenAPI/encryption'
+  FIDO Authentication: '/OpenAPI/fido-authentication'
