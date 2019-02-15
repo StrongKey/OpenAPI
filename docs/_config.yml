@@ -4,4 +4,4 @@ description: Interactive API documentation for data tokenziation, file encryptio
 pages_list:       
   Data Tokenization: '/OpenAPI/tokenization'
   File Encryption: '/OpenAPI/encryption'
-  FIDO Authentication: '/OpenAPI/fido-authentication'
+  FIDO Authentication: '/OpenAPI/fido_authentication'
