@@ -14,6 +14,8 @@ info:
     access to sensitive information. The default credentials for demo applications have the usernames "encrypt", "decrypt",
     "encryptdecrypt", "pinguser", and "all". The usernames describe the web services these credentials are authorized to use.
     They all have the password "Abcd1234!" for demo purposes.
+  contact:
+    email: support@strongkey.com
   license:
     name: GNU LGPL 2.1+
     url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
