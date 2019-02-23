@@ -15,14 +15,12 @@ info:
     They all have the password _Abcd1234_" for demo purposes.
   termsOfService: 'https://www.strongkey.com/privacy-policy-terms-of-use/#terms-of-use'
   contact:
-    name: StrongKey
-    url: 'https://www.strongkey.com'
     email: support@strongkey.com
   license:
     name: GNU LGPL 2.1+
     url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
 servers:
-  - url: '/skfe/rest'
+  - url: 'https://api.encryptedweb.org/skfe/rest'
 tags:
   - name: U2F
     description: StrongKey implementation of the FIDO U2F protocol.
