@@ -22,12 +22,10 @@ info:
 servers:
   - url: 'https://api.encryptedweb.org/skfe/rest'
 tags:
-  - name: U2F
-    description: StrongKey implementation of the FIDO U2F protocol.
+  - name: FIDO2
+    description: StrongKey implementation of the FIDO2 protocol.
   - name: Administration
     description: Management API for registered FIDO keys.
-  - name: WIP
-    description: Work-In-Progress stubs for future use cases.
 paths:
   /preregister:
     post:
@@ -491,137 +489,13 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/GenericResponse'
-  /preauthorize:
-    post:
-      summary: Stub for _transactional authorization_. Currently identical to _preauthenticate_.
-      description: |
-        Step 1 for _transactional authorization_. This method generates and returns a challenge to the caller.
-      tags:
-        - WIP
-      operationId: preauthorize
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              required:
-                - svcinfo
-                - payload
-              properties:
-                svcinfo:
-                  $ref: '#/components/schemas/svcinfo'
-                payload:
-                  allOf:
-                    - $ref: '#/components/schemas/payload'
-                    - type: object
-                      required:
-                        - username
-                      properties:
-                        username:
-                          $ref: '#/components/schemas/username'
-                  example: |
-                    {
-                      "username": "testuser"
-                    }
-      responses:
-        '200':
-          $ref: '#/components/responses/GenericResponse'
-  /authorize:
-    post:
-      summary: Stub for _transactional authorization_. Currently identical to _authenticate_.
-      description: |
-        Step 2 for *transactional authorization*. This method allows for caller to return the signed challenge to be returned to the server to be verified. To test this web service, follow these steps:
-        1) If you have a FIDO U2F authenticator, skip Steps 2-6.
-        2) Using Firefox, open a **new tab**.
-        3) Enter **about:config** into the URL address bar.
-        4) Search for **webauthn** in the search bar.
-        5) Double-click **security.webauth.webauthn_enable_softtoken** to set the value to _true_.
-        6) Double-click **security.webauth.webauthn_enable_hardware** to _false_.
-        7) On this page, open the console (**F12**).
-        8) **Copy and paste this text** into the console: *u2f.sign(APPID, CHALLENGE, REGISTEREDKEYS, function(result){console.log(result);})*
-        
-        **Note: Steps 9-14 MUST be completed within 30 seconds. Otherwise the Response message will return the Error "FIDO-ERR-0006: User session in-active: {0}" and authorization will fail.**
-        
-        9) Run the *preauthorize* web service.
-        10) Replace _APPID_, _CHALLENGE_, and _REGISTEREDKEYS_ with the values _**appId**_, _**challenge**_, and _**registeredKeys**_ returned by the *preauthorize* response.
-        11) Press **Enter** on the console to submit the code.
-        12) **Tap the FIDO U2F authenticator** to sign the challenge. If you followed Steps 2-6, ignore this step.
-        13) Replace the _CLIENTDATA_, _KEYHANDLE_ and _SIGNATUREDATA_ text in the example text with values of _**clientData**_, _**keyHandle**_, and _**signatureData**_ displayed in the console.
-        14) **Run the web service**.
-        
-        
-      tags:
-        - WIP
-      operationId: authorize
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              required:
-                - svcinfo
-                - payload
-              properties:
-                svcinfo:
-                  $ref: '#/components/schemas/svcinfo'
-                payload:
-                  allOf:
-                    - $ref: '#/components/schemas/payload'
-                    - type: object
-                      properties:
-                        metadata:
-                          allOf:
-                            - $ref: '#/components/schemas/metadata'
-                            - type: object
-                              required:
-                                - username
-                                - version
-                                - last_used_location
-                              properties:
-                                username:
-                                  $ref: '#/components/schemas/username'
-                                version:
-                                  $ref: '#/components/schemas/version'
-                                last_used_location:
-                                  $ref: '#/components/schemas/location'
-                        response:
-                          allOf:
-                            - $ref: '#/components/schemas/response'
-                            - type: object
-                              required:
-                                - clientData
-                                - keyHandle
-                                - signatureData
-                              properties:
-                                clientData:
-                                  type: string
-                                keyHandle:
-                                  type: string
-                                signatureData:
-                                  type: string
-                      example: |
-                        {
-                          "metadata": {
-                            "username": "testuser",
-                            "version": "1.0",
-                            "last_used_location": "Unknown"
-                          },
-                          "response": {
-                            "clientData": "CLIENTDATA",
-                            "keyHandle": "KEYHANDLE",
-                            "signatureData": "SIGNATUREDATA"
-                          }
-                        }
-      responses:
-        '200':
-          $ref: '#/components/responses/ChallengeResponse'
   /getserverinfo:
     post:
       summary: Get information about FIDO server(s).
       description: |
         A placeholder to send back any server-side information that could be needed by the client applications.
       tags:
-        - WIP
+        - Administration
       operationId: getserverinfo
       requestBody:
         content:
