@@ -14,6 +14,7 @@ info:
     access to sensitive information. The default credentials for demo applications have the usernames "encrypt", "decrypt",
     "encryptdecrypt", "pinguser", and "all". The usernames describe the web services these credentials are authorized to use.
     They all have the password "Abcd1234!" for demo purposes.
+  termsOfService: 'https://www.strongkey.com/privacy-policy-terms-of-use/#terms-of-use'
   contact:
     email: support@strongkey.com
   license:
