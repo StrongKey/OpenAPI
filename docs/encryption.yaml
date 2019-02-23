@@ -21,7 +21,7 @@ info:
     name: GNU LGPL 2.1+
     url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
 servers:
-  - url: '/skee/rest'
+  - url: 'https://api.encryptedweb.org/skee/rest'
 tags:
   - name: Standard Operations
     description: File encryption/decryption.
