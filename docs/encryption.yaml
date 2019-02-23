@@ -16,8 +16,6 @@ info:
     They all have the password "Abcd1234!" for demo purposes.
   termsOfService: 'https://www.strongkey.com/privacy-policy-terms-of-use/#terms-of-use'
   contact:
-    name: StrongKey
-    url: 'https://www.strongkey.com'
     email: support@strongkey.com
   license:
     name: GNU LGPL 2.1+
