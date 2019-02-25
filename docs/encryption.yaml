@@ -393,21 +393,21 @@ components:
         }
 
     storageinfo:
-      description: Provides cloud related information for encryption engine to connect and store the encrypted file in a cloud storage container. This will either contain cloudname, accesskey, secretkey, or cloudcredentialid which the above three tokenized by the KeyAppliance.
+      description: Provides cloud related information for encryption engine to connect and store the encrypted file in a cloud storage container. This will either contain cloudname, accesskey, secretkey, or cloudcredentialid which the above three tokenized.
       type: object
       required:
         - cloudtype
         - cloudname
       properties:
         storetype:
-          description: Location to store the ecrypted file (Local | Cloud).
+          description: Location to store the encrypted file (Local | Cloud).
           type: string
           nullable: true
         cloudtype:
           description: The type of cloud to be used for storage (AWS | AZURE | EUCA).
           type: string
         cloudname:
-          description: Cloud identifer as provided by the Cloud service provider.
+          description: Cloud identifer as provided by the cloud service provider.
           type: string
         accesskey:
           description: The accesskey (username) to access the cloud storage service as provided by the service provider.
@@ -418,11 +418,11 @@ components:
           type: string
           nullable: true
         cloudcontainer:
-          description: The location of the storage container (buckets) where the encrypted file will be stored.
+          description: The location of the storage container (bucket) where the encrypted file will be stored.
           type: string
           nullable: true
         cloudcredentialid:
-          description: If the cloud information is tokenized using the KeyAppliance, then this value represents the token returned by the KA.
+          description: If the cloud information is tokenized, then this value represents the token returned.
           type: string
           nullable: true
       example: |
