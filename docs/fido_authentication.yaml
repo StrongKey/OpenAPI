@@ -1,12 +1,14 @@
 openapi: 3.0.0
 info:
   title: FIDO Server API
-  version: 4.0.0
+  version: 2.0
   description: |
     The FIDO Server API provides the registration and authentication web services required to manage users' FIDO keys.
+
     All API calls require a cryptographic _domain ID (did)_. Cryptographic domains provide a method of cryptographically
     separating encrypted data. Each domain uses a different set of encryption keys, uses a different set of credentials,
     and can be configured separately to have different behaviors.
+
     All web services require a set access and secret key. The secret key is used to authenticate the user to the server 
     and protect the integrity of the request through the use of an HMAC-SHA-256 digest over the request. The access key
     is used to identify which secret was used so the server can regenerate the equivalent digest and verify the request
@@ -18,10 +20,12 @@ info:
     name: GNU LGPL 2.1+
     url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
 servers:
-  - url: 'https://api.encryptedweb.org/api/domains/{did}'
+  - url: '/api/domains/{did}'
 tags:
-  - name: FIDO2
-    description: FIDO Server, featuring the standard FIDO2 protocol.
+  - name: Register
+    description: Register a user and their FIDO key using FIDO2 protocols.
+  - name: Authenticate
+    description: Authenticate a user using FIDO2 protocols.
   - name: Administration
     description: Management API for registered FIDO keys.
 paths:
@@ -31,7 +35,7 @@ paths:
       description: |
         Step 1 for FIDO authenticator registration. This method generates and returns a challenge to the caller.
       tags:
-        - FIDO2
+        - Register
       operationId: preregister
       parameters:
         - in: path
@@ -39,7 +43,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: header
           name: strongkey-content-sha256
@@ -61,7 +65,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -76,13 +80,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex POST)
-                + content SHA-256 + "\n"       (ex RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
-                + content type + "\n"          (ex application/json)
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: POST)
+                + content SHA-256 + "\n"       (ex: RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
+                + content type + "\n"          (ex: application/json)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       requestBody:
         content:
           application/json:
@@ -117,7 +121,7 @@ paths:
       description: |
         Step 2 for FIDO authenticator registration. This method allows the caller to return the signed challenge to the server to be verified.
       tags:
-        - FIDO2
+        - Register
       operationId: register
       parameters:
         - in: path
@@ -125,7 +129,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: header
           name: strongkey-content-sha256
@@ -147,7 +151,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -162,13 +166,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex POST)
-                + content SHA-256 + "\n"       (ex RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
-                + content type + "\n"          (ex application/json)
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: POST)
+                + content SHA-256 + "\n"       (ex: RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
+                + content type + "\n"          (ex: application/json)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       requestBody:
         content:
           application/json:
@@ -207,14 +211,14 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: query
           name: username
           schema:
             type: string
           required: true
-          description: String username to retrieve keyinfo for.
+          description: String username for which to retrieve keyinfo.
           example: user.name@domain.com
         - in: header
           name: Date
@@ -222,7 +226,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -237,13 +241,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex GET)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: GET)
                 + "\n"
                 + "\n"
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys?username=user.name@domain.com)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys?username=user.name@domain.com)
       responses:
         '200':
           $ref: '#/components/responses/GenericResponse'
@@ -261,7 +265,7 @@ paths:
       description: |
         Step 1 for FIDO authenticator authentication. This method generates and returns a challenge to the caller.
       tags:
-        - FIDO2
+        - Authenticate
       operationId: preauthenticate
       parameters:
         - in: path
@@ -269,7 +273,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: header
           name: strongkey-content-sha256
@@ -291,7 +295,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -306,13 +310,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex POST)
-                + content SHA-256 + "\n"       (ex RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
-                + content type + "\n"          (ex application/json)
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: POST)
+                + content SHA-256 + "\n"       (ex: RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
+                + content type + "\n"          (ex: application/json)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       requestBody:
         content:
           application/json:
@@ -345,7 +349,7 @@ paths:
       description: |
         Step 2 for FIDO authenticator authentication. This method allows the caller to return the signed challenge to the server to be verified.
       tags:
-        - FIDO2
+        - Authenticate
       operationId: authenticate
       parameters:
         - in: path
@@ -353,7 +357,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: header
           name: strongkey-content-sha256
@@ -375,7 +379,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -390,13 +394,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex POST)
-                + content SHA-256 + "\n"       (ex RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
-                + content type + "\n"          (ex application/json)
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: POST)
+                + content SHA-256 + "\n"       (ex: RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
+                + content type + "\n"          (ex: application/json)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       requestBody:
         content:
           application/json:
@@ -436,7 +440,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: path
           name: kid
@@ -465,7 +469,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -480,13 +484,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex POST)
-                + content SHA-256 + "\n"       (ex RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
-                + content type + "\n"          (ex application/json)
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: POST)
+                + content SHA-256 + "\n"       (ex: RDk2y8UcpVXsnFmyo6TzRpJxbszectFj8zR3bFdDjyY=)
+                + content type + "\n"          (ex: application/json)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       requestBody:
         content:
           application/json:
@@ -515,7 +519,7 @@ paths:
     delete:
       summary: Delete a registered key.
       description: |
-        The process of deleting or de-registering an already registered FIDO authenticator. The inputs needed are the username and the random ID to point to a unique registered key for that user. This random ID can be obtained by calling the *getkeysinfo* method.
+        The process of deleting or de-registering an already-registered FIDO authenticator. The inputs needed are the username and the random ID to point to a unique registered key for that user. This random ID can be obtained by calling the *getkeysinfo* method.
       tags:
         - Administration
       operationId: deregister
@@ -525,7 +529,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: Numeric ID of the domain to request services from.
+          description: Numeric ID of the domain from which to request services.
           example: 1
         - in: path
           name: kid
@@ -540,7 +544,7 @@ paths:
             type: string
             example: Mon, 25 Feb 2019 01:48:43 PST
           required: true
-          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z"
+          description: The date that the request is being made in the format "EEE, d MMM yyyy HH:mm:ss z".
         - in: header
           name: strongkey-api-version
           schema:
@@ -555,13 +559,13 @@ paths:
             example: HMAC <access key>:<HMAC-SHA-256-of-request>
           required: true
           description: | 
-              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth which requires an access key and secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the form of\:
-                + http verb + "\n"             (ex DELETE)
+              The type of authentication to present to the server. The currently supported mechanism is HMAC Auth, which requires an access key and a secret key. The secret key must be used to create an HMAC-SHA256 hash over the request in the following form\:
+                + http verb + "\n"             (ex: DELETE)
                 + "\n"
                 + "\n"
-                + current date + "\n"          (ex Mon, 25 Feb 2019 01:48:43 PST)
-                + strongkey api version + "\n" (ex 2.0)
-                + resource location            (ex /api/domains/1/fidokeys)
+                + current date + "\n"          (ex: Mon, 25 Feb 2019 01:48:43 PST)
+                + strongkey api version + "\n" (ex: 2.0)
+                + resource location            (ex: /api/domains/1/fidokeys)
       responses:
         '200':
           $ref: '#/components/responses/GenericResponse'
@@ -594,7 +598,7 @@ components:
         - Message
       properties:
         Response:
-          description: The produced result of the web service operation, typically an error message for non 200 status returns.
+          description: The result produced by the web service operation, typically an error message for non-200 status returns.
           type: string
     options:
       description: The options that accompany this request.
@@ -610,7 +614,7 @@ components:
       maxLength: 256
       example: user.name@domain.com
     displayname:
-      description: The username associated with or to be associated with the FIDO key.
+      description: The display name associated with or to be associated with the FIDO key.
       type: string
       maxLength: 256
       example: User Name
@@ -636,11 +640,11 @@ components:
               "Response": "",
             }
     BadAuth:
-      description: The HMAC Authentication failed
+      description: The HMAC Authentication failed.
     MissingResource:
-      description: The requested resource is unavailable
+      description: The requested resource is unavailable.
     BadInput:
-      description: Their was an error in the submitted input
+      description: There was an error in the submitted input.
       content:
         application/json:
           schema:
@@ -650,7 +654,7 @@ components:
               "Response": "",
             }
     ServerError:
-      description: The server ran into an unexpected exception
+      description: The server ran into an unexpected exception.
       content:
         application/json:
           schema:
