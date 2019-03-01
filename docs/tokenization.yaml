@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
-  title: Data Tokenization API
+  title: Data Encryption & Tokenization API
   version: 4.0.0
   description: |
-    The Data Tokenization API provides encryption capabilities for the secure storage and management of
+    The Data Encryption & Tokenization API provides encryption capabilities for the secure storage and management of
     sensitive information.
 
     All API calls require a cryptographic domain ID ("did"). Cryptographic domains provide a method of cryptographically
