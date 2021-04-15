@@ -21,7 +21,7 @@ info:
     name: GNU LGPL 2.1+
     url: 'http://www.fsf.org/licensing/licenses/lgpl.html'
 servers:
-  - url: 'https://api.encryptedweb.org/strongkeyliteWAR/rest'
+  - url: 'https://demo4.strongkey.com/strongkeyliteWAR/rest'
 tags:
   - name: Standard Operations
     description: Cryptographic operations performed on a per-transaction basis.
