@@ -1,21 +1,17 @@
 openapi: 3.0.0
 info:
-  title: Data Encryption & Tokenization API
-  version: 4.0.0
   description: |
-    The Data Encryption & Tokenization API provides encryption capabilities for the secure storage and management of
-    sensitive information.
-
-    All API calls require a cryptographic domain ID ("did"). Cryptographic domains provide a method of cryptographically
-    separating encrypted data. Each domain uses a different set of encryption keys, uses a different set of credentials,
-    and can be configured separately to have different behaviors.
-
-    All web services require a set of valid credentials. These credentials provide administrators the ability to restrict
-    access to sensitive information. The default credentials for demo applications have the usernames "encrypt", "decrypt",
-    "encryptdecrypt", "pinguser", and "all". The usernames describe the web services these credentials are authorized to use.
-    They all have the password "Abcd1234!" for demo purposes.
-  termsOfService: 'https://www.strongkey.com/privacy-policy-terms-of-use/#terms-of-use'
+    The StrongAuth Key Appliance (SAKA) provides encryption capabilities for the secure storage and management of sensitive information.
+    
+    All web services require a domain ID ("did"). This domain ID specifies a "cryptographic domain". Cryptographic domains provide a method of separation for encrypted data. Each domain uses a different set of encryption keys, uses a different set of credentials, and can be configured separately to have different behaviors.
+    
+    All web services require a set of valid credentials. These credentials provide administrators the ability to restrict access to sensitive information. The default credentials for demo applications have the usernames "encrypt", "decrypt", "encryptdecrypt", "pinguser", and "all". The usernames describe the web services these credentials are authorized to use. They all have the password "Abcd1234!" for demo purposes.
+  version: 1.0.0
+  title: SAKA
+  termsOfService: 'https://strongkey.com/TODO'
   contact:
+    name: StrongKey
+    url: 'https://www.strongkey.com'
     email: support@strongkey.com
   license:
     name: GNU LGPL 2.1+
@@ -25,6 +21,10 @@ servers:
 tags:
   - name: Standard Operations
     description: Cryptographic operations performed on a per-transaction basis.
+  - name: Batch Operations
+    description: Cryptographic operations performed on a batch of data. **Try it out cannot be used for these web services.**
+  - name: General Purpose Key Operations
+    description: Cryptographic operations performed using an externally supplied key. **Requires externally supplied key be stored via KMS.**
   - name: Miscellaneous
     description: Other operations.
 paths:
@@ -128,8 +128,8 @@ paths:
               example: This request requires HTTP authentication.
   /search:
     post:
-      summary: Search for the supplied plaintext.
-      description: This web service operation searches for plaintext that might exist within the database. If found, it returns the corresponding token or a zero (0) if not found. This web service uses HMACs to determine if the plaintext is stored. Because of this, this operation will only return a token for an exact match of the plaintext (not substrings).
+      summary: Search for the supplied plaintext. 
+      description: This web service operation searches for plaintext that might exist within the database. If found, it returns the corresponding token or a zero (0) if not found. This web service uses HMACs to determine if the plaintext is stored by the SAKA. Because of this, this operation will only return a token for an exact match of the plaintext (not substrings).
       tags:
         - Standard Operations
       operationId: search
@@ -176,7 +176,7 @@ paths:
               example: This request requires HTTP authentication.
   /delete:
     post:
-      summary: Delete the stored ciphertext.
+      summary: Delete the stored ciphertext. 
       description: This web service operation deletes ciphertext.
       tags:
         - Standard Operations
@@ -228,11 +228,388 @@ paths:
             text/html:
               schema:
                 type: string
+  /relay:
+    post:
+      summary: Send decrypted plaintext to a 3rd party 
+      description: |  
+        Relays a Credit Card Number (CCN) transaction to a payment gateway. The web service will look for xml with the HttpRequestToken tag, creating a new NameValue pair for each token with the name specified with HttpRequestTokenKey and the plaintext specified by HttpRequestTokenValue. This new NameValue pair will replace the HttpRequestToken. In this way payment processors can send sensitive information to payment gateways without receiving the information in plaintext.
+        
+        <br>
+        **<em>Try it out</em> cannot be used for this web service.** This web service requires input that must be calculated and submited to the payment gateway in a timeframe that is infeasible to achieve with human input.
+        
+#        <s>
+#        For the sake of this demo, the only payment gateway approved for this demo is Authorize.net. A sandbox account can be created here for testing, https://developer.authorize.net/hello_world/sandbox/. To send requests to Authorize.net:
+#        1) Open the console (F12).
+#        2) Run the following lines of code replacing APILOGINID, SEQUENCENUMBER, and AMOUNT with the ApiLoginID provided by Authorize.net, a random number, and an amount to charge the credit card:
+#          var t = (new Date).getTime();
+#          function buf2hex(buffer) {
+#            return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+#          }
+#          console.log("TIMESTAMP: " + t);
+#          var str = "APILOGINID" + "^" + "SEQUENCENUMBER" + "^" + t + "^" + "AMOUNT";
+#          var buffer = new TextEncoder("utf-8").encode(str);
+#          crypto.subtle.digest("SHA-512", buffer).then(function (hash) {
+#              console.log("HASH: " + buf2hex(hash));
+#          });
+#        3) Replace APILOGINID, AMOUNT, SEQUNCENUMBER, TIMESTAMP, and HASH with the values used/returned by Step 2. TOKEN should be replaced by a token that represents a CCN.
+#        4) Execute the web service.
+#        </s>
+      tags:
+        - Standard Operations
+      operationId: relay
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - relayurl
+                - relayprotocol
+                - relayencoding
+                - relaycontent
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                relayurl:
+                  $ref: '#/components/schemas/relayurl'
+                relayprotocol:
+                  $ref: '#/components/schemas/relayprotocol'
+                relayencoding:
+                  $ref: '#/components/schemas/relayencoding'
+                relaycontent:
+                  $ref: '#/components/schemas/relaycontent'
+      responses:
+        '200':
+          description: Returns the response xml from the payment gateway.
+          content:
+            application/xml:
+              schema:
+                type: string
+              example: 'true'
+  /batchEncrypt:
+    post:
+      summary: Encrypt the plaintexts supplied in an input file.
+      description: This web service operation kicks off a batch encryption job on the appliance. This allows the encryption of large numbers of sensitive data objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can typically do the same level of processing in approximately 1/10th the time of standard web service requests.
+      tags:
+        - Batch Operations
+      operationId: batchEncrypt
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - inputfile
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                inputfile:
+                  $ref: '#/components/schemas/inputfile'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
+  /batchDecrypt:
+    post:
+      summary: Decrypt the ciphertexts corresponding to the tokens supplied in an input file.
+      description: This web service operation kicks off a batch decryption job on the appliance. This allows the decryption of large numbers of sensitive data objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can typically do the same level of processing in approximately 1/10th the time of standard web service requests.
+      tags:
+        - Batch Operations
+      operationId: batchDecrypt
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - inputfile
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                inputfile:
+                  $ref: '#/components/schemas/inputfile'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
+  /batchSearch:
+    post:
+      summary: Search for plaintexts supplied in an input file.
+      description: This web service operation kicks-off a batch search job on the appliance. This allows the searching of large numbers of sensitive objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can, typically, do the same level of processing in approximately 1/10th the time of standard web service requests.
+      tags:
+        - Batch Operations
+      operationId: batchSearch
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - inputfile
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                inputfile:
+                  $ref: '#/components/schemas/inputfile'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
+  /batchDelete:
+    post:
+      summary: Delete the ciphertext corresponding to the tokens supplied in an input file.
+      description: This web service operation kicks off a batch deletion job on the appliance. This allows the deletion of large numbers of sensitive data objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can typically do the same level of processing in approximately 1/10th the time of standard web service requests.
+      tags:
+        - Batch Operations
+      operationId: batchDelete
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - inputfile
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                inputfile:
+                  $ref: '#/components/schemas/inputfile'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
+  /gpkEncrypt:
+    post:
+      summary: Encrypt the supplied plaintext using the input parameters.
+      description: This web service operation encrypts the supplied plaintext using the SecretKey represented by gpktoken using the supplied parameters.
+      tags:
+        - General Purpose Key Operations
+      operationId: gpkEncrypt
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - gpktoken
+                - plaintext
+                - iv
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                gpktoken:
+                  $ref: '#/components/schemas/gpktoken'
+                plaintext:
+                  $ref: '#/components/schemas/plaintext'
+                encoding:
+                  $ref: '#/components/schemas/encoding'
+                algorithm:
+                  $ref: '#/components/schemas/algorithm'
+                iv:
+                  $ref: '#/components/schemas/iv'
+                aad:
+                  $ref: '#/components/schemas/aad'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
+  /gpkDecrypt:
+    post:
+      summary: Decrypt the supplied plaintext using the input parameters.
+      description: This web service operation decrypts the supplied plaintext using the SecretKey represented by gpktoken with the supplied parameters.
+      tags:
+        - General Purpose Key Operations
+      operationId: gpkDecrypt
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - did
+                - username
+                - password
+                - gpktoken
+                - ciphertext
+                - iv
+              properties:
+                did:
+                  $ref: '#/components/schemas/did'
+                username:
+                  $ref: '#/components/schemas/username'
+                password:
+                  $ref: '#/components/schemas/password'
+                gpktoken:
+                  $ref: '#/components/schemas/gpktoken'
+                ciphertext:
+                  $ref: '#/components/schemas/ciphertext'
+                encoding:
+                  $ref: '#/components/schemas/encoding'
+                algorithm:
+                  $ref: '#/components/schemas/algorithm'
+                iv:
+                  $ref: '#/components/schemas/iv'
+                aad:
+                  $ref: '#/components/schemas/aad'
+        required: true
+      responses:
+        '200':
+          description: Returns the filename of the output file.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid Input.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'SKL-ERR-1003: NULL argument: did'
+        '401':
+          description: Invalid Authorization (username/password).
+          content:
+            text/html:
+              schema:
+                type: string
+              example: This request requires HTTP authentication.
   /ping:
     post:
-      summary: Verify that the tokenization server is up and running.
-      description: |
-        Connect to the server and attempt to encrypt and decrypt a well-known plaintext. Also returns some server information.
+      summary: Verify that the server is up and running. 
+      description: |  
+        Connect to the server and attempt to encrypt and decrypt a well-known plaintext. Also returns some SAKA information.
       tags:
         - Miscellaneous
       operationId: ping
@@ -254,7 +631,7 @@ paths:
                   $ref: '#/components/schemas/password'
       responses:
         '200':
-          description: Successfully pinged the server.
+          description: Successfully pinged the SAKA.
           content:
             text/plain:
               schema:
@@ -275,8 +652,8 @@ paths:
               example: This request requires HTTP authentication.
   /entropy:
     post:
-      summary: Get true random numbers
-      description: |
+      summary: Get true random numbers 
+      description: |  
         This web service operation recovers entropy from a bytebuffer filled by a hardware TRNG and returns the specified number of bytes to the calling application.
       tags:
         - Miscellaneous
@@ -321,8 +698,8 @@ paths:
               schema:
                 type: string
               example: This request requires HTTP authentication.
-
-
+  
+    
 components:
   schemas:
     did:
@@ -355,6 +732,12 @@ components:
       minLength: 7
       maxLength: 64
       example: 1000000000000002
+    gpktoken:
+      description: A string that represents the encyrpted General Purpose Key.
+      type: integer
+      minLength: 7
+      maxLength: 64
+      example: 1000000000000002
     encoding:
       description: The encoding used on passed data.
       type: string
@@ -379,3 +762,92 @@ components:
       type: string
       minLength: 1
       maxLength: 12285
+    inputfile:
+      description: Filename for the file that contains the batch operations.
+      type: string
+    relayurl:
+      description: |
+        A payment gateway's url. For the sake of this demo, only Authorizate.net's sandbox is allowed. Please contact us if you wish to test another payment gateway.
+      type: string
+      example: https://test.authorize.net/gateway/transact.dll
+    relayprotocol:
+      description: The protocol in which to send the information to the payment gateway (SOAP/HTTP).
+      type: string
+      enum:
+        - SOAP
+        - HTTP
+      example: HTTP
+    relayencoding:
+      description: The encoding of the text to send the payment gateway.
+      type: string
+      example: UTF-8
+    relaycontent:
+      description: The information that should be sent to the payment gateway.
+      type: string
+      example: |
+        <skles:HttpRelayContent xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:skles='http://xml.strongauth.com/schema/SKLESRelaySchema'
+        xsi:schemaLocation='http://xml.strongauth.com/schema/SKLESRelaySchema SKLESRelaySchema.xsd'>
+          <skles:HttpRequestHeaders>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_login</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>APILOGINID</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_version</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>3.1</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_method</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>CC</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_type</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>AUTH_CAPTURE</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_exp_date</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>1218</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_amount</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>AMOUNT</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_test_request</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>FALSE</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_fp_sequence</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>SEQUENCENUMBER</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_fp_timestamp</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>TIMESTAMP</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+              <skles:HttpRequestHeader>
+                <skles:HttpRequestHeaderKey>x_fp_hash</skles:HttpRequestHeaderKey>
+                <skles:HttpRequestHeaderValue>HASH</skles:HttpRequestHeaderValue>
+              </skles:HttpRequestHeader>
+            </skles:HttpRequestHeaders>
+            <skles:HttpRequestParameters>
+              <skles:HttpRequestParameter>
+                <skles:HttpRequestParameterKey>x_cust_id</skles:HttpRequestParameterKey>
+                <skles:HttpRequestParameterValue>777</skles:HttpRequestParameterValue>
+              </skles:HttpRequestParameter>
+              <skles:HttpRequestParameter>
+                <skles:HttpRequestParameterKey>x_description</skles:HttpRequestParameterKey>
+                <skles:HttpRequestParameterValue>Yadayadayada</skles:HttpRequestParameterValue>
+              </skles:HttpRequestParameter>
+                <skles:HttpRequestParameter>
+                <skles:HttpRequestParameterKey>x_invoice_num</skles:HttpRequestParameterKey>
+                <skles:HttpRequestParameterValue>12345</skles:HttpRequestParameterValue>
+              </skles:HttpRequestParameter>
+            </skles:HttpRequestParameters>
+            <skles:HttpRequestTokens>
+              <skles:HttpRequestToken>
+                <skles:HttpRequestTokenKey>x_card_num</skles:HttpRequestTokenKey>
+                <skles:HttpRequestTokenValue>TOKEN</skles:HttpRequestTokenValue>
+            </skles:HttpRequestToken>
+          </skles:HttpRequestTokens>
+        </skles:HttpRelayContent>
