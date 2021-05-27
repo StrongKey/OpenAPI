@@ -232,10 +232,10 @@ paths:
     post:
       summary: Send decrypted plaintext to a 3rd party 
       description: |  
-        Relays a Credit Card Number (CCN) transaction to a payment gateway. The web service will look for xml with the HttpRequestToken tag, creating a new NameValue pair for each token with the name specified with HttpRequestTokenKey and the plaintext specified by HttpRequestTokenValue. This new NameValue pair will replace the HttpRequestToken. In this way payment processors can send sensitive information to payment gateways without receiving the information in plaintext.
+        Relays a Credit Card Number (CCN) transaction to a payment gateway. The web service will look for XML with the HttpRequestToken tag, creating a new NameValue pair for each token with the name specified with HttpRequestTokenKey and the plaintext specified by HttpRequestTokenValue. This new NameValue pair will replace the HttpRequestToken. In this way payment processors can send sensitive information to payment gateways without receiving the information in plaintext.
         
         <br>
-        **_Try it out_ cannot be used for this web service.** This web service requires input that must be calculated and submited to the payment gateway in a timeframe that is infeasible to achieve with human input.
+        **Try it out cannot be used for this web service.** This web service requires input that must be calculated and submited to the payment gateway in a timeframe that is infeasible to achieve with human input.
         
 #        <s>
 #        For the sake of this demo, the only payment gateway approved for this demo is Authorize.net. A sandbox account can be created here for testing, https://developer.authorize.net/hello_world/sandbox/. To send requests to Authorize.net:
@@ -287,7 +287,7 @@ paths:
                   $ref: '#/components/schemas/relaycontent'
       responses:
         '200':
-          description: Returns the response xml from the payment gateway.
+          description: Returns the response X from the payment gateway.
           content:
             application/xml:
               schema:
@@ -392,7 +392,7 @@ paths:
   /batchSearch:
     post:
       summary: Search for plaintexts supplied in an input file.
-      description: This web service operation kicks-off a batch search job on the appliance. This allows the searching of large numbers of sensitive objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can, typically, do the same level of processing in approximately 1/10th the time of standard web service requests.
+      description: This web service operation kicks off a batch search job on the appliance. This allows the searching of large numbers of sensitive objects - millions at a time - without having to send a unique web service request for each object, which can take an inordinate amount of time. The batch job can typically do the same level of processing in approximately 1/10th the time of standard web service requests.
       tags:
         - Batch Operations
       operationId: batchSearch
@@ -712,7 +712,7 @@ components:
       type: string
       example: all
     password:
-      description: The password of the user authorized to make this web service.
+      description: The password of the user authorized to make this web service call.
       type: string
       format: password
       example: Abcd1234!
@@ -733,7 +733,7 @@ components:
       maxLength: 64
       example: 1000000000000002
     gpktoken:
-      description: A string that represents the encyrpted General Purpose Key.
+      description: A string that represents the encrypted General Purpose Key.
       type: integer
       minLength: 7
       maxLength: 64
@@ -767,7 +767,7 @@ components:
       type: string
     relayurl:
       description: |
-        A payment gateway's url. For the sake of this demo, only Authorizate.net's sandbox is allowed. Please contact us if you wish to test another payment gateway.
+        A payment gateway's URL. For the sake of this demo, only Authorizate.net's sandbox is allowed. Please contact us if you wish to test another payment gateway.
       type: string
       example: https://test.authorize.net/gateway/transact.dll
     relayprotocol:
