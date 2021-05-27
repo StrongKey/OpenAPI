@@ -235,7 +235,7 @@ paths:
         Relays a Credit Card Number (CCN) transaction to a payment gateway. The web service will look for xml with the HttpRequestToken tag, creating a new NameValue pair for each token with the name specified with HttpRequestTokenKey and the plaintext specified by HttpRequestTokenValue. This new NameValue pair will replace the HttpRequestToken. In this way payment processors can send sensitive information to payment gateways without receiving the information in plaintext.
         
         <br>
-        **<em>Try it out</em> cannot be used for this web service.** This web service requires input that must be calculated and submited to the payment gateway in a timeframe that is infeasible to achieve with human input.
+        **_Try it out_ cannot be used for this web service.** This web service requires input that must be calculated and submited to the payment gateway in a timeframe that is infeasible to achieve with human input.
         
 #        <s>
 #        For the sake of this demo, the only payment gateway approved for this demo is Authorize.net. A sandbox account can be created here for testing, https://developer.authorize.net/hello_world/sandbox/. To send requests to Authorize.net:
